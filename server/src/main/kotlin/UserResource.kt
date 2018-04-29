@@ -24,7 +24,6 @@ class UserResource {
         if (patronList[loginRequest.username]?.password.equals(loginRequest.password)){
             println("Login Success: " + "${loginRequest.username}")
             response = LoginResponse("Welcome!", patronList[loginRequest.username]!!)
-            println(patronList[loginRequest.username]!!)
             fileHandler.writeLoginHistory(loginRequest.username,true)
         }else{
             response = LoginResponse("Wrong password or Username not exist!",null)
@@ -37,10 +36,10 @@ class UserResource {
     @Consumes(MediaType.APPLICATION_JSON)
     fun create(createRequest:CreateRequest):Response{
         val response: CreateResponse
-        val u = createRequest.patron.username
-        val p = createRequest.patron.password
+        val u = createRequest.username
+        val p = createRequest.password
         if(!patronList.containsKey(u)) {
-            patronList += createRequest.patron
+            patronList += User(u,p)
             println("Created: ${u}")
             fileHandler.writePatrons(patronList)
             response = CreateResponse("Created!", patronList[u]!!)
