@@ -27,7 +27,7 @@ class UserResource {
             println(patronList[loginRequest.username]!!)
             fileHandler.writeLoginHistory(loginRequest.username,true)
         }else{
-            response = LoginResponse("Wrong password or Username not exist!", Null())
+            response = LoginResponse("Wrong password or Username not exist!",null)
             fileHandler.writeLoginHistory(loginRequest.username,false)
         }
         return Response.status(Response.Status.OK).entity(response).build()
@@ -46,7 +46,7 @@ class UserResource {
             response = createResponse("Created!", patronList[u]!!)
             fileHandler.writeCreateHistory(u,true)
         }else{
-            response = createResponse("Existed!", Null())
+            response = createResponse("Existed!", null)
             fileHandler.writeCreateHistory(u,false)
         }
         return Response.status(Response.Status.OK).entity(response).build()

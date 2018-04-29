@@ -23,7 +23,7 @@ dependencies {
     compile "org.glassfish.jersey.containers:jersey-container-netty-http:2.25.1"
     compile "org.glassfish.jersey.media:jersey-media-json-jackson:2.25.1"
     compile "com.fasterxml.jackson.module:jackson-module-kotlin:2.8.4"
-    compile 'com.github.team5lib:classlib:342c72cb66'
+    compile 'com.github.team5lib:classlib:c420749a4e'
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 }
 
