@@ -36,17 +36,17 @@ class UserResource {
     @POST @Path("create")
     @Consumes(MediaType.APPLICATION_JSON)
     fun create(createRequest:CreateRequest):Response{
-        val response: createResponse
+        val response: CreateResponse
         val u = createRequest.patron.username
         val p = createRequest.patron.password
         if(!patronList.containsKey(u)) {
             patronList += createRequest.patron
             println("Created: ${u}")
             fileHandler.writePatrons(patronList)
-            response = createResponse("Created!", patronList[u]!!)
+            response = CreateResponse("Created!", patronList[u]!!)
             fileHandler.writeCreateHistory(u,true)
         }else{
-            response = createResponse("Existed!", null)
+            response = CreateResponse("Existed!", null)
             fileHandler.writeCreateHistory(u,false)
         }
         return Response.status(Response.Status.OK).entity(response).build()
