@@ -1,6 +1,8 @@
 package edu.uiowa.cs.team5
 
+import edu.uiowa.cs.team5.Patron.Companion.adminList
 import edu.uiowa.cs.team5.Patron.Companion.patronList
+import edu.uiowa.cs.team5.Survey.Companion.surveyList
 import javax.ws.rs.*
 import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.Response
@@ -13,8 +15,9 @@ class UserResource {
     init {
         patronList = fileHandler.readPatrons()
         try{
-            patronList += User("user", "user")
-            patronList += Admin("admin", "admin")
+            patronList += Patron("user", "user")
+            patronList += Patron("admin", "admin",true)
+            fileHandler.writePatrons()
         }catch (e:Error){
             //do nothing
         }
@@ -28,7 +31,8 @@ class UserResource {
         if (patronList[loginRequest.username]?.password.equals(loginRequest.password)){
             println("Login Success: " + "${loginRequest.username}")
             val p = patronList[loginRequest.username]!!
-            response = LoginResponse("Welcome!", p,p is Admin)
+            val isAdmin = adminList.containsKey(p.username)
+            response = LoginResponse("Welcome!", p, isAdmin)
             fileHandler.writeLoginHistory(loginRequest.username,true)
         }else{
             response = LoginResponse("Wrong password or Username not exist!",null,false)
@@ -43,10 +47,10 @@ class UserResource {
         var response: CreateResponse
         val u = createRequest.username
         val p = createRequest.password
-        val user: User
+        val patron: Patron
         try{
-            user = User(u,p)
-            patronList += user
+            patron = Patron(u,p)
+            patronList += patron
             println("Created: ${u}")
             fileHandler.writePatrons()
             response = CreateResponse("Created!", patronList[u]!!)
@@ -57,6 +61,21 @@ class UserResource {
         return Response.status(Response.Status.OK).entity(response).build()
     }
 
+    @POST @Path("submit")
+    @Consumes(MediaType.APPLICATION_JSON)
+    fun submit(submitRequest:SubmitRequest):Response{
+        var response: SubmitResponse
+        var username = submitRequest.patron.username
+        var data = submitRequest.patron.surveyList
+        try {
+            patronList[username]!!.surveyList = data
+            fileHandler.writePatrons()
+            response = SubmitResponse("Submitted!", patronList[username]!!)
+        }catch (e:Error){
+            response = SubmitResponse("Failure!",null)
+        }
+        return Response.status(Response.Status.OK).entity(response).build()
+    }
 
 
     /*
