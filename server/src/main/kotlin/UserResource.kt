@@ -12,8 +12,12 @@ class UserResource {
 
     init {
         patronList = fileHandler.readPatrons()
-        patronList += User("user", "user")
-        patronList += Admin("admin", "admin")
+        try{
+            patronList += User("user", "user")
+            patronList += Admin("admin", "admin")
+        }catch (e:Error){
+            //do nothing
+        }
     }
 
     @POST @Path("login")
@@ -23,10 +27,11 @@ class UserResource {
         println("Login Request: " + "${loginRequest.username}")
         if (patronList[loginRequest.username]?.password.equals(loginRequest.password)){
             println("Login Success: " + "${loginRequest.username}")
-            response = LoginResponse("Welcome!", patronList[loginRequest.username]!!)
+            val p = patronList[loginRequest.username]!!
+            response = LoginResponse("Welcome!", p,p is Admin)
             fileHandler.writeLoginHistory(loginRequest.username,true)
         }else{
-            response = LoginResponse("Wrong password or Username not exist!",null)
+            response = LoginResponse("Wrong password or Username not exist!",null,false)
             fileHandler.writeLoginHistory(loginRequest.username,false)
         }
         return Response.status(Response.Status.OK).entity(response).build()
@@ -35,21 +40,24 @@ class UserResource {
     @POST @Path("create")
     @Consumes(MediaType.APPLICATION_JSON)
     fun create(createRequest:CreateRequest):Response{
-        val response: CreateResponse
+        var response: CreateResponse
         val u = createRequest.username
         val p = createRequest.password
-        if(!patronList.containsKey(u)) {
-            patronList += User(u,p)
+        val user: User
+        try{
+            user = User(u,p)
+            patronList += user
             println("Created: ${u}")
-            fileHandler.writePatrons(patronList)
+            fileHandler.writePatrons()
             response = CreateResponse("Created!", patronList[u]!!)
             fileHandler.writeCreateHistory(u,true)
-        }else{
-            response = CreateResponse("Existed!", null)
-            fileHandler.writeCreateHistory(u,false)
+        }catch(e:Error){
+            response = CreateResponse(e.message.toString(),null)
         }
         return Response.status(Response.Status.OK).entity(response).build()
     }
+
+
 
     /*
     @GET @Path("{username}")
