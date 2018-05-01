@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/server.iml" filepath="$PROJECT_DIR$/.idea/modules/server.iml" group="server" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/server/server_main.iml" filepath="$PROJECT_DIR$/.idea/modules/server/server_main.iml" group="server" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/server/server_test.iml" filepath="$PROJECT_DIR$/.idea/modules/server/server_test.iml" group="server" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/serverlib.iml" filepath="$PROJECT_DIR$/.idea/modules/serverlib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/serverlib_main.iml" filepath="$PROJECT_DIR$/.idea/modules/serverlib_main.iml" group="serverlib" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/serverlib_test.iml" filepath="$PROJECT_DIR$/.idea/modules/serverlib_test.iml" group="serverlib" />
+    </modules>
+  </component>
+</project>

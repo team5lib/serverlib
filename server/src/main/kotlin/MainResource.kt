@@ -6,18 +6,25 @@ import edu.uiowa.cs.team5.Survey.Companion.surveyList
 import javax.ws.rs.*
 import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.Response
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
-@Path("users")  // when this runs, try http://localhost:8080/users/Iowa for the "GET" request
+@Path("main")  // when this runs, try http://localhost:8080/users/Iowa for the "GET" request
 @Produces(MediaType.APPLICATION_JSON)
-class UserResource {
+class MainResource {
     private val fileHandler = FileHandler()
+    private val gson = Gson()
+    inline fun <reified T> Gson.fromJson(json: String) = this.fromJson<T>(json, object: TypeToken<T>() {}.type)
 
     init {
         patronList = fileHandler.readPatrons()
+        adminList = fileHandler.readAdmins()
         try{
-            patronList += Patron("user", "user")
+            patronList += Patron("user", "user",false)
             patronList += Patron("admin", "admin",true)
             fileHandler.writePatrons()
+            fileHandler.writeAdmins()
+
         }catch (e:Error){
             //do nothing
         }
@@ -25,17 +32,18 @@ class UserResource {
 
     @POST @Path("login")
     @Consumes(MediaType.APPLICATION_JSON)
-    fun login(loginRequest: LoginRequest):Response {
-        val response: LoginResponse
+    fun login(loginRequestString: String):Response {
+        val loginRequest = gson.fromJson<LoginRequest>(loginRequestString)
+        val response: String
         println("Login Request: " + "${loginRequest.username}")
         if (patronList[loginRequest.username]?.password.equals(loginRequest.password)){
             println("Login Success: " + "${loginRequest.username}")
             val p = patronList[loginRequest.username]!!
             val isAdmin = adminList.containsKey(p.username)
-            response = LoginResponse("Welcome!", p, isAdmin)
+            response = gson.toJson(LoginResponse("Welcome!", p, isAdmin))
             fileHandler.writeLoginHistory(loginRequest.username,true)
         }else{
-            response = LoginResponse("Wrong password or Username not exist!",null,false)
+            response = gson.toJson(LoginResponse("Wrong password or Username not exist!",null,false))
             fileHandler.writeLoginHistory(loginRequest.username,false)
         }
         return Response.status(Response.Status.OK).entity(response).build()
@@ -43,36 +51,58 @@ class UserResource {
 
     @POST @Path("create")
     @Consumes(MediaType.APPLICATION_JSON)
-    fun create(createRequest:CreateRequest):Response{
-        var response: CreateResponse
+    fun create(createRequestString:String):Response{
+        val createRequest = gson.fromJson<CreateRequest>(createRequestString)
+        var response: String
         val u = createRequest.username
         val p = createRequest.password
         val patron: Patron
         try{
-            patron = Patron(u,p)
+            patron = Patron(u,p,false)
             patronList += patron
             println("Created: ${u}")
             fileHandler.writePatrons()
-            response = CreateResponse("Created!", patronList[u]!!)
+            response = gson.toJson(CreateResponse("Created!", patronList[u]!!))
             fileHandler.writeCreateHistory(u,true)
         }catch(e:Error){
-            response = CreateResponse(e.message.toString(),null)
+            response = gson.toJson(CreateResponse(e.message.toString(),null))
         }
         return Response.status(Response.Status.OK).entity(response).build()
     }
 
     @POST @Path("submit")
     @Consumes(MediaType.APPLICATION_JSON)
-    fun submit(submitRequest:SubmitRequest):Response{
-        var response: SubmitResponse
+    fun submit(submitRequestString:String):Response{
+        val submitRequest = gson.fromJson<SubmitRequest>(submitRequestString)
+        var response: String
         var username = submitRequest.patron.username
         var data = submitRequest.patron.surveyList
         try {
             patronList[username]!!.surveyList = data
+            if (adminList.containsKey(username)){
+                println("Starting to update...")
+                for((username,patron) in patronList){
+                    for(i in 0..data.size-1){
+                        if (patron.surveyList.size<(i+1)){
+                            println("adding survey: ${data[i].title} to $username")
+                            patron.surveyList.add(data[i])
+                        }else {
+                            println("updating survey: ${data[i].title} to $username")
+                            patron.surveyList[i].title = data[i].title
+                            for (j in 0..data[i].questionList.size-1){
+                                patron.surveyList[i].questionList[j].question = data[i].questionList[j].question
+                            }
+                        }
+                    }
+                    println("$username updated")
+                }
+                println("update finished")
+            }
             fileHandler.writePatrons()
-            response = SubmitResponse("Submitted!", patronList[username]!!)
+            response = gson.toJson(SubmitResponse("Submitted!", patronList[username]!!))
+            println("Submitted from: ${username}")
         }catch (e:Error){
-            response = SubmitResponse("Failure!",null)
+            response = gson.toJson(SubmitResponse(e.message.toString(),null))
         }
         return Response.status(Response.Status.OK).entity(response).build()
     }
@@ -81,9 +111,9 @@ class UserResource {
     /*
     @GET @Path("{username}")
             // Test in browser with http://localhost:8080/users/Iowa
-    fun getUser(@PathParam("username") username: String): User? {
+    fun getUser(@PathParam("username") username: String): String {
         println("Get " + "$username")
-        return users[username]
+        return gson.toJson(patronList[username])
         // note the return type is User? which means it will either
         // be null (no user found) or a User object -- but then
         // that user object is "serialized" into JSON, because the
