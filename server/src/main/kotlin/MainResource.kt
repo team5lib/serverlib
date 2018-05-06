@@ -75,8 +75,8 @@ class MainResource {
     fun submit(submitRequestString:String):Response{
         val submitRequest = gson.fromJson<SubmitRequest>(submitRequestString)
         var response: String
-        var username = submitRequest.patron.username
-        var data = submitRequest.patron.surveyList
+        var username = submitRequest.username
+        var data = submitRequest.surveylist
         try {
             patronList[username]!!.surveyList = data
             if (adminList.containsKey(username)){
